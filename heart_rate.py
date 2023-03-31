@@ -1,4 +1,3 @@
-
 #Add Phidgets Library
 from Phidget22.Phidget import *
 from Phidget22.Devices.VoltageRatioInput import *
@@ -19,12 +18,13 @@ def processSamples():
         filtered_data = hp.filter_signal(raw_data, cutoff = 5, sample_rate = 100.0, order = 3, filtertype='lowpass')
         scaled_data = hp.scale_data(filtered_data)
         working_data, measures = hp.process(scaled_data, 100.0, )
-
-        print("\nHEART RATE: " + str(measures['bpm']) + " BPM\n") #returns BPM value
+        temp_heart_rate = (measures['bpm'])
+        return temp_heart_rate
     except:
         print("\nUnable to determine heart rate. Try adjusting pulse sensor!\n")
         raw_data.clear()
-        collectSamples()
+        return -1
+    
     
 def collectSamples():
     global collect_samples
@@ -35,7 +35,8 @@ def collectSamples():
         timer -= 1
         time.sleep(1)
     collect_samples = False
-    processSamples()
+    return processSamples()
+    
 #Create
 pulse = VoltageRatioInput()
 
@@ -53,9 +54,17 @@ pulse.openWaitForAttachment(1000)
 pulse.setDataInterval(10) #Set data interval to 10ms (100Hz sample rate)
 
 
-collectSamples()
 while(True):
+    heartRate = collectSamples()
+    if(heartRate == -1):
+        print("Error")
+    elif(heartRate < 70):
+        print("Happy")
+    elif(heartRate > 70 and heartRate < 130):
+        print("High")
+    else:
+        print("Way too high")
     time.sleep(1)
+    
 
 
-  
